@@ -21,9 +21,9 @@ export const parseParticipantsCSV = (csvContent: string): Participant[] => {
         throw new Error(`Invalid data format in line: ${line}`);
       }
       
-      // Validate USN format (1MSnnaaaaa)
-      if (!usn.match(/^1MS\d+$/)) {
-        throw new Error(`Invalid USN format for ${name}: ${usn}. Expected format: 1MSnnaaaaa`);
+      // Validate USN format (1MSnnaannn) - like 1MS22CS038
+      if (!usn.match(/^1MS\d{2}[A-Za-z]{2}\d{3}$/)) {
+        throw new Error(`Invalid USN format for ${name}: ${usn}. Expected format: 1MSnnaannn (e.g., 1MS22CS038)`);
       }
       
       return { name, usn };
