@@ -7,6 +7,7 @@ import { RoomCodeDisplay } from '@/components/ui/room-code-display';
 import { ParticipantUpload } from '@/components/admin/ParticipantUpload';
 import { TeamSetup } from '@/components/admin/TeamSetup';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EvaluationDownload } from '@/components/admin/EvaluationDownload';
 
 const AdminDashboard = () => {
   const { isAdminLoggedIn, participants, teams } = useRoom();
@@ -111,7 +112,9 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="evaluation">
+          <TabsContent value="evaluation" className="space-y-6">
+            <EvaluationDownload />
+            
             <div className="glass-morphism rounded-lg p-6 text-center">
               <h3 className="text-lg font-medium mb-4">Evaluation Setup</h3>
               <p className="text-muted-foreground mb-6">
