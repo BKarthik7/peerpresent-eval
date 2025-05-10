@@ -26,34 +26,45 @@ export const EvaluationDownload = () => {
         ]
       }));
       
-      // Create JSON content
-      const jsonContent = JSON.stringify(evaluationData, null, 2);
-      
-      // Create a blob from the JSON content
-      const blob = new Blob([jsonContent], { type: 'application/json' });
-      
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      
       // Get current date in yyyy-mm-dd format
       const dateString = format(new Date(), 'yyyy-MM-dd');
       
-      // Create filename
-      const filename = `PeerPresent_${dateString}.json`;
-      
-      // Create anchor element and trigger download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Process each team's evaluation data separately
+      teams.forEach(team => {
+        // Filter evaluation data for this specific team
+        const teamData = evaluationData.find(data => data.teamName === team.name);
+        
+        if (!teamData) return;
+        
+        // Create JSON content for this team
+        const jsonContent = JSON.stringify(teamData, null, 2);
+        
+        // Create a blob from the JSON content
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        
+        // Sanitize team name for filename (replace spaces and special characters)
+        const safeTeamName = team.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        
+        // Create filename with team name
+        const filename = `PeerPresent_${safeTeamName}_${dateString}.json`;
+        
+        // Create anchor element and trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
       
       toast.success("Evaluation data downloaded successfully", {
-        description: `Saved to ./PeerPresent/${dateString}/`
+        description: `Saved to ./PeerPresent/${dateString}/[teamname]/`
       });
     } catch (error) {
       console.error("Download failed:", error);
@@ -72,7 +83,7 @@ export const EvaluationDownload = () => {
       </div>
       
       <p className="text-muted-foreground mb-4">
-        Download all evaluation data as a JSON file. The file will be saved to ./PeerPresent/yyyy-mm-dd/ format.
+        Download all evaluation data as JSON files. Files will be saved to ./PeerPresent/yyyy-mm-dd/teamname/ format.
       </p>
       
       <Button 
