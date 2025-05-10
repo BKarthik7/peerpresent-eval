@@ -21,11 +21,12 @@ export const PeerJoinForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validation
-    if (!usn.match(/^1MS\d+$/)) {
+    // Validation - USN format should be 1MSnnaannn (like 1MS22CS038)
+    // First 3 chars: 1MS, followed by 2 digits, followed by 2 letters, followed by 3 digits
+    if (!usn.match(/^1MS\d{2}[A-Za-z]{2}\d{3}$/)) {
       toast({
         title: "Invalid USN format",
-        description: "USN should be in the format 1MSnnaaaaa",
+        description: "USN should be in the format 1MSnnaannn (e.g., 1MS22CS038)",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -66,9 +67,9 @@ export const PeerJoinForm: React.FC = () => {
             <div className="space-y-2">
               <Input
                 id="usn"
-                placeholder="USN (1MSnnaaaaa)"
+                placeholder="USN (e.g., 1MS22CS038)"
                 value={usn}
-                onChange={(e) => setUsn(e.target.value)}
+                onChange={(e) => setUsn(e.target.value.toUpperCase())}
                 required
               />
             </div>
