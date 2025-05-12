@@ -19,6 +19,8 @@ type RoomContextType = {
   currentPresenter: Team | null;
   isPresentationActive: boolean;
   isEvaluationActive: boolean;
+  isScreenSharing: boolean;
+  screenShareStream: MediaStream | null;
   
   // Admin actions
   setRoomCode: (code: string) => void;
@@ -30,6 +32,8 @@ type RoomContextType = {
   stopPresentation: () => void;
   startEvaluation: () => void;
   stopEvaluation: () => void;
+  startScreenShare: (stream: MediaStream) => void;
+  stopScreenShare: () => void;
 };
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -42,6 +46,8 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentPresenter, setCurrentPresenter] = useState<Team | null>(null);
   const [isPresentationActive, setIsPresentationActive] = useState<boolean>(false);
   const [isEvaluationActive, setIsEvaluationActive] = useState<boolean>(false);
+  const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
+  const [screenShareStream, setScreenShareStream] = useState<MediaStream | null>(null);
 
   const loginAdmin = () => {
     setIsAdminLoggedIn(true);
@@ -58,6 +64,7 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCurrentPresenter(null);
     setIsPresentationActive(false);
     setIsEvaluationActive(false);
+    stopScreenShare();
   };
 
   const startPresentation = (team: Team) => {
@@ -68,6 +75,7 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const stopPresentation = () => {
     setIsPresentationActive(false);
+    stopScreenShare();
   };
 
   const startEvaluation = () => {
@@ -77,6 +85,21 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const stopEvaluation = () => {
     setIsEvaluationActive(false);
     setCurrentPresenter(null);
+    stopScreenShare();
+  };
+
+  const startScreenShare = (stream: MediaStream) => {
+    setScreenShareStream(stream);
+    setIsScreenSharing(true);
+  };
+
+  const stopScreenShare = () => {
+    if (screenShareStream) {
+      // Stop all tracks in the stream
+      screenShareStream.getTracks().forEach(track => track.stop());
+    }
+    setScreenShareStream(null);
+    setIsScreenSharing(false);
   };
 
   return (
@@ -89,6 +112,8 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         currentPresenter,
         isPresentationActive,
         isEvaluationActive,
+        isScreenSharing,
+        screenShareStream,
         setRoomCode,
         loginAdmin,
         logoutAdmin,
@@ -98,6 +123,8 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         stopPresentation,
         startEvaluation,
         stopEvaluation,
+        startScreenShare,
+        stopScreenShare,
       }}
     >
       {children}

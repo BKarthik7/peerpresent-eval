@@ -1,15 +1,16 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoom } from '@/context/RoomContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Presentation } from 'lucide-react';
+import { ScreenShare, Presentation } from 'lucide-react';
 import { PeerEvaluationForm } from '@/components/evaluation/PeerEvaluationForm';
 
 const PeerPresentation = () => {
-  const { roomCode, currentPresenter, isPresentationActive, isEvaluationActive } = useRoom();
+  const { roomCode, currentPresenter, isPresentationActive, isEvaluationActive, isScreenSharing, screenShareStream } = useRoom();
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
     // Redirect if there is no room code or no presentation active
@@ -22,6 +23,14 @@ const PeerPresentation = () => {
       navigate('/peer/waiting');
     }
   }, [roomCode, isPresentationActive, navigate]);
+  
+  // Handle screen sharing stream changes
+  useEffect(() => {
+    if (videoRef.current && screenShareStream) {
+      videoRef.current.srcObject = screenShareStream;
+      videoRef.current.play().catch(e => console.error("Error playing video:", e));
+    }
+  }, [screenShareStream, isScreenSharing]);
   
   if (!roomCode || !isPresentationActive || !currentPresenter) {
     return null;
@@ -44,23 +53,38 @@ const PeerPresentation = () => {
             <Card className="glass-morphism h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Presentation className="h-5 w-5" />
-                  Presentation View
+                  {isScreenSharing ? (
+                    <ScreenShare className="h-5 w-5" />
+                  ) : (
+                    <Presentation className="h-5 w-5" />
+                  )}
+                  {isScreenSharing ? 'Screen Share' : 'Presentation View'}
                 </CardTitle>
                 <CardDescription>
-                  Watch the presentation in real-time
+                  {isScreenSharing ? 'Viewing shared screen in real-time' : 'Waiting for presenter to share their screen'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center justify-center p-6">
-                <div className="w-full aspect-video bg-secondary/30 rounded-lg flex flex-col items-center justify-center p-8">
-                  <Presentation className="h-16 w-16 text-secondary-foreground/30 mb-4" />
-                  <p className="text-center text-secondary-foreground/70">
-                    {currentPresenter.name} is currently presenting
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2 text-center">
-                    The presentation is in progress
-                  </p>
-                </div>
+                {isScreenSharing ? (
+                  <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
+                    <video 
+                      ref={videoRef}
+                      autoPlay 
+                      playsInline
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full aspect-video bg-secondary/30 rounded-lg flex flex-col items-center justify-center p-8">
+                    <Presentation className="h-16 w-16 text-secondary-foreground/30 mb-4" />
+                    <p className="text-center text-secondary-foreground/70">
+                      {currentPresenter.name} is currently presenting
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2 text-center">
+                      Waiting for presenter to start screen sharing...
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
