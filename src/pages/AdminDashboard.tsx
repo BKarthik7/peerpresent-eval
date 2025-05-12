@@ -8,6 +8,8 @@ import { ParticipantUpload } from '@/components/admin/ParticipantUpload';
 import { TeamSetup } from '@/components/admin/TeamSetup';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EvaluationDownload } from '@/components/admin/EvaluationDownload';
+import { PresentationControls } from '@/components/presentation/PresentationControls';
+import { EvaluationSetup } from '@/components/evaluation/EvaluationSetup';
 
 const AdminDashboard = () => {
   const { isAdminLoggedIn, participants, teams } = useRoom();
@@ -104,23 +106,12 @@ const AdminDashboard = () => {
           </TabsContent>
           
           <TabsContent value="presentation">
-            <div className="glass-morphism rounded-lg p-6 text-center">
-              <h3 className="text-lg font-medium mb-4">Presentation Controls</h3>
-              <p className="text-muted-foreground mb-6">
-                This feature will be available in the next version
-              </p>
-            </div>
+            <PresentationControls />
           </TabsContent>
           
           <TabsContent value="evaluation" className="space-y-6">
             <EvaluationDownload />
-            
-            <div className="glass-morphism rounded-lg p-6 text-center">
-              <h3 className="text-lg font-medium mb-4">Evaluation Setup</h3>
-              <p className="text-muted-foreground mb-6">
-                This feature will be available in the next version
-              </p>
-            </div>
+            <EvaluationSetup />
           </TabsContent>
         </Tabs>
       </main>

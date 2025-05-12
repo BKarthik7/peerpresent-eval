@@ -12,6 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import PeerJoin from "./pages/PeerJoin";
 import PeerWaiting from "./pages/PeerWaiting";
+import PeerPresentation from "./pages/PeerPresentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/join" element={<PeerJoin />} />
             <Route path="/peer/waiting" element={<PeerWaiting />} />
+            <Route path="/peer/presentation" element={<PeerPresentation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
