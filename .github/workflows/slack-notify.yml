@@ -1,0 +1,28 @@
+name: Slack Notifications
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, closed ]
+  issues:
+    types: [ opened, closed ]
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: GitHub Actions
+          SLACK_ICON_EMOJI: ":octocat:"
+          SLACK_COLOR: "#36a64f"
+          SLACK_TITLE: GitHub Repo Event Notification
+          SLACK_MESSAGE: |
+            *Event:* ${{ github.event_name }}
+            *Repository:* ${{ github.repository }}
+            *Actor:* ${{ github.actor }}
+            *Ref:* ${{ github.ref }}
+            *Event Details:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
