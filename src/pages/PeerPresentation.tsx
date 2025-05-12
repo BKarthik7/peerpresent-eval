@@ -6,11 +6,13 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScreenShare, Presentation } from 'lucide-react';
 import { PeerEvaluationForm } from '@/components/evaluation/PeerEvaluationForm';
+import { useToast } from '@/hooks/use-toast';
 
 const PeerPresentation = () => {
   const { roomCode, currentPresenter, isPresentationActive, isEvaluationActive, isScreenSharing, screenShareStream } = useRoom();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { toast } = useToast();
   
   useEffect(() => {
     // Redirect if there is no room code or no presentation active
@@ -26,11 +28,33 @@ const PeerPresentation = () => {
   
   // Handle screen sharing stream changes
   useEffect(() => {
+    console.log("Screen sharing status changed:", isScreenSharing);
+    console.log("Screen stream available:", !!screenShareStream);
+    
     if (videoRef.current && screenShareStream) {
+      console.log("Setting video source to screen share stream");
       videoRef.current.srcObject = screenShareStream;
-      videoRef.current.play().catch(e => console.error("Error playing video:", e));
+      
+      videoRef.current.onloadedmetadata = () => {
+        console.log("Video metadata loaded");
+        videoRef.current?.play().catch(e => {
+          console.error("Error playing video:", e);
+          toast({
+            title: "Video Playback Error",
+            description: "Unable to play the shared screen. Please refresh the page.",
+            variant: "destructive"
+          });
+        });
+      };
+      
+      toast({
+        title: "Screen Sharing Started",
+        description: `${currentPresenter?.name || 'The presenter'} is now sharing their screen.`
+      });
+    } else if (isScreenSharing && !screenShareStream) {
+      console.warn("Screen sharing is active but no stream is available");
     }
-  }, [screenShareStream, isScreenSharing]);
+  }, [screenShareStream, isScreenSharing, currentPresenter, toast]);
   
   if (!roomCode || !isPresentationActive || !currentPresenter) {
     return null;

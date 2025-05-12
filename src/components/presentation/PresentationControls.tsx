@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export const PresentationControls: React.FC = () => {
   const { 
@@ -21,6 +22,7 @@ export const PresentationControls: React.FC = () => {
     stopScreenShare
   } = useRoom();
   const [selectedTeam, setSelectedTeam] = useState<string>(currentPresenter?.name || '');
+  const [showScreenSharePrompt, setShowScreenSharePrompt] = useState(false);
   const { toast } = useToast();
   
   const handleStartPresentation = () => {
@@ -49,13 +51,30 @@ export const PresentationControls: React.FC = () => {
     });
   };
 
+  const handleScreenSharePrompt = () => {
+    setShowScreenSharePrompt(true);
+  };
+
   const handleStartScreenShare = async () => {
     try {
+      setShowScreenSharePrompt(false);
+      console.log("Attempting to get display media...");
+      
+      // Use displayMedia API directly with explicit options
       const stream = await navigator.mediaDevices.getDisplayMedia({ 
-        video: true,
-        audio: true 
+        video: {
+          cursor: "always",
+          displaySurface: "monitor",
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+        // Force the browser to display the permission dialog
+        selfBrowserSurface: "exclude",
       });
       
+      console.log("Display media acquired:", stream);
       startScreenShare(stream);
       
       toast({
@@ -63,12 +82,12 @@ export const PresentationControls: React.FC = () => {
         description: "Your screen is now visible to all peers",
       });
     } catch (error) {
+      console.error("Error starting screen share:", error);
       toast({
         title: "Screen Sharing Failed",
         description: "Could not start screen sharing. Please try again.",
         variant: "destructive",
       });
-      console.error("Error starting screen share:", error);
     }
   };
 
@@ -145,7 +164,7 @@ export const PresentationControls: React.FC = () => {
                 
                 {isPresentationActive && !isScreenSharing ? (
                   <Button 
-                    onClick={handleStartScreenShare}
+                    onClick={handleScreenSharePrompt}
                     variant="secondary"
                     className="flex items-center gap-2"
                   >
@@ -223,6 +242,33 @@ export const PresentationControls: React.FC = () => {
                   <li>Click "Stop Presentation" when the entire presentation is complete</li>
                 </ol>
               </div>
+              
+              {/* Screen Share Confirmation Dialog */}
+              <Dialog open={showScreenSharePrompt} onOpenChange={setShowScreenSharePrompt}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Share your screen</DialogTitle>
+                    <DialogDescription>
+                      You'll be prompted to select which screen or application window to share with peers.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col space-y-4 pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      When you click "Start Sharing", your browser will ask for permission to share your screen.
+                      Select the window or screen you want to share and confirm.
+                    </p>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setShowScreenSharePrompt(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleStartScreenShare}>
+                        <ScreenShare className="h-4 w-4 mr-2" />
+                        Start Sharing
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </>
           )}
         </CardContent>

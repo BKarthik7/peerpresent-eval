@@ -68,68 +68,73 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const startPresentation = (team: Team) => {
+    console.log("Starting presentation for team:", team.name);
     setCurrentPresenter(team);
     setIsPresentationActive(true);
     setIsEvaluationActive(false);
   };
 
   const stopPresentation = () => {
+    console.log("Stopping presentation");
     setIsPresentationActive(false);
     stopScreenShare();
   };
 
   const startEvaluation = () => {
+    console.log("Starting evaluation");
     setIsEvaluationActive(true);
   };
 
   const stopEvaluation = () => {
+    console.log("Stopping evaluation");
     setIsEvaluationActive(false);
     setCurrentPresenter(null);
     stopScreenShare();
   };
 
   const startScreenShare = (stream: MediaStream) => {
+    console.log("Starting screen share with stream tracks:", stream.getTracks().length);
     setScreenShareStream(stream);
     setIsScreenSharing(true);
   };
 
   const stopScreenShare = () => {
+    console.log("Stopping screen share");
     if (screenShareStream) {
       // Stop all tracks in the stream
-      screenShareStream.getTracks().forEach(track => track.stop());
+      screenShareStream.getTracks().forEach(track => {
+        console.log("Stopping track:", track.kind);
+        track.stop();
+      });
     }
     setScreenShareStream(null);
     setIsScreenSharing(false);
   };
 
-  return (
-    <RoomContext.Provider
-      value={{
-        roomCode,
-        isAdminLoggedIn,
-        participants,
-        teams,
-        currentPresenter,
-        isPresentationActive,
-        isEvaluationActive,
-        isScreenSharing,
-        screenShareStream,
-        setRoomCode,
-        loginAdmin,
-        logoutAdmin,
-        setParticipants,
-        setTeams,
-        startPresentation,
-        stopPresentation,
-        startEvaluation,
-        stopEvaluation,
-        startScreenShare,
-        stopScreenShare,
-      }}
-    >
-      {children}
-    </RoomContext.Provider>
-  );
+  const value: RoomContextType = {
+    roomCode,
+    isAdminLoggedIn,
+    participants,
+    teams,
+    currentPresenter,
+    isPresentationActive,
+    isEvaluationActive,
+    isScreenSharing,
+    screenShareStream,
+    setRoomCode,
+    loginAdmin,
+    logoutAdmin,
+    setParticipants,
+    setTeams,
+    startPresentation,
+    stopPresentation,
+    startEvaluation,
+    stopEvaluation,
+    startScreenShare,
+    stopScreenShare,
+  };
+
+  return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;
 };
 
 export const useRoom = (): RoomContextType => {
