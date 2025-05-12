@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoom } from '@/context/RoomContext';
+import { toast } from '@/hooks/use-toast';
 
 const PeerWaiting = () => {
   const { roomCode, isPresentationActive } = useRoom();
@@ -12,12 +13,18 @@ const PeerWaiting = () => {
     if (!roomCode) {
       navigate('/join');
     }
-    
-    // Redirect to presentation page if presentation is active
+  }, [roomCode, navigate]);
+  
+  useEffect(() => {
+    // Separate useEffect for monitoring presentation state
     if (isPresentationActive) {
+      toast({
+        title: "Presentation Started",
+        description: "A presentation has started. Redirecting you now...",
+      });
       navigate('/peer/presentation');
     }
-  }, [roomCode, isPresentationActive, navigate]);
+  }, [isPresentationActive, navigate]);
   
   if (!roomCode) {
     return null;

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRoom } from '@/context/RoomContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScreenShare } from 'lucide-react';
+import { Presentation } from 'lucide-react';
 import { PeerEvaluationForm } from '@/components/evaluation/PeerEvaluationForm';
 
 const PeerPresentation = () => {
@@ -15,7 +15,10 @@ const PeerPresentation = () => {
     // Redirect if there is no room code or no presentation active
     if (!roomCode) {
       navigate('/join');
-    } else if (!isPresentationActive) {
+      return;
+    } 
+    
+    if (!isPresentationActive) {
       navigate('/peer/waiting');
     }
   }, [roomCode, isPresentationActive, navigate]);
@@ -41,21 +44,21 @@ const PeerPresentation = () => {
             <Card className="glass-morphism h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <ScreenShare className="h-5 w-5" />
+                  <Presentation className="h-5 w-5" />
                   Presentation View
                 </CardTitle>
                 <CardDescription>
-                  Watch the presenter's screen in real-time
+                  Watch the presentation in real-time
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center justify-center p-6">
                 <div className="w-full aspect-video bg-secondary/30 rounded-lg flex flex-col items-center justify-center p-8">
-                  <ScreenShare className="h-16 w-16 text-secondary-foreground/30 mb-4" />
+                  <Presentation className="h-16 w-16 text-secondary-foreground/30 mb-4" />
                   <p className="text-center text-secondary-foreground/70">
-                    Waiting for presenter to share their screen...
+                    {currentPresenter.name} is currently presenting
                   </p>
                   <p className="text-sm text-muted-foreground mt-2 text-center">
-                    You'll see the presenter's screen here once they start sharing
+                    The presentation is in progress
                   </p>
                 </div>
               </CardContent>
