@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 type Participant = {
   name: string;
@@ -38,16 +38,64 @@ type RoomContextType = {
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
 
+// Local storage keys
+const STORAGE_KEYS = {
+  ADMIN_LOGIN: 'peerPresent_adminLogin',
+  ROOM_CODE: 'peerPresent_roomCode',
+  PARTICIPANTS: 'peerPresent_participants',
+  TEAMS: 'peerPresent_teams',
+  CURRENT_PRESENTER: 'peerPresent_currentPresenter',
+  IS_PRESENTATION_ACTIVE: 'peerPresent_isPresentationActive',
+  IS_EVALUATION_ACTIVE: 'peerPresent_isEvaluationActive'
+};
+
 export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [roomCode, setRoomCode] = useState<string>('');
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [currentPresenter, setCurrentPresenter] = useState<Team | null>(null);
-  const [isPresentationActive, setIsPresentationActive] = useState<boolean>(false);
-  const [isEvaluationActive, setIsEvaluationActive] = useState<boolean>(false);
+  // Initialize state from localStorage if available
+  const [roomCode, setRoomCode] = useState<string>(() => {
+    const savedRoomCode = localStorage.getItem(STORAGE_KEYS.ROOM_CODE);
+    return savedRoomCode || '';
+  });
+  
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem(STORAGE_KEYS.ADMIN_LOGIN) === 'true';
+  });
+  
+  const [participants, setParticipants] = useState<Participant[]>(() => {
+    const savedParticipants = localStorage.getItem(STORAGE_KEYS.PARTICIPANTS);
+    return savedParticipants ? JSON.parse(savedParticipants) : [];
+  });
+  
+  const [teams, setTeams] = useState<Team[]>(() => {
+    const savedTeams = localStorage.getItem(STORAGE_KEYS.TEAMS);
+    return savedTeams ? JSON.parse(savedTeams) : [];
+  });
+  
+  const [currentPresenter, setCurrentPresenter] = useState<Team | null>(() => {
+    const savedPresenter = localStorage.getItem(STORAGE_KEYS.CURRENT_PRESENTER);
+    return savedPresenter ? JSON.parse(savedPresenter) : null;
+  });
+  
+  const [isPresentationActive, setIsPresentationActive] = useState<boolean>(() => {
+    return localStorage.getItem(STORAGE_KEYS.IS_PRESENTATION_ACTIVE) === 'true';
+  });
+  
+  const [isEvaluationActive, setIsEvaluationActive] = useState<boolean>(() => {
+    return localStorage.getItem(STORAGE_KEYS.IS_EVALUATION_ACTIVE) === 'true';
+  });
+  
   const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
   const [screenShareStream, setScreenShareStream] = useState<MediaStream | null>(null);
+
+  // Effect to update localStorage when state changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ADMIN_LOGIN, isAdminLoggedIn.toString());
+    localStorage.setItem(STORAGE_KEYS.ROOM_CODE, roomCode);
+    localStorage.setItem(STORAGE_KEYS.PARTICIPANTS, JSON.stringify(participants));
+    localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
+    localStorage.setItem(STORAGE_KEYS.CURRENT_PRESENTER, currentPresenter ? JSON.stringify(currentPresenter) : '');
+    localStorage.setItem(STORAGE_KEYS.IS_PRESENTATION_ACTIVE, isPresentationActive.toString());
+    localStorage.setItem(STORAGE_KEYS.IS_EVALUATION_ACTIVE, isEvaluationActive.toString());
+  }, [isAdminLoggedIn, roomCode, participants, teams, currentPresenter, isPresentationActive, isEvaluationActive]);
 
   const loginAdmin = () => {
     setIsAdminLoggedIn(true);
@@ -65,6 +113,9 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsPresentationActive(false);
     setIsEvaluationActive(false);
     stopScreenShare();
+    
+    // Clear localStorage on logout
+    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
   };
 
   const startPresentation = (team: Team) => {

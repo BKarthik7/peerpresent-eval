@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useRoom } from '@/context/RoomContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,18 +59,13 @@ export const PresentationControls: React.FC = () => {
       setShowScreenSharePrompt(false);
       console.log("Attempting to get display media...");
       
-      // Use displayMedia API directly with explicit options
+      // Use displayMedia API with correct TypeScript constraints
       const stream = await navigator.mediaDevices.getDisplayMedia({ 
-        video: {
-          cursor: "always",
-          displaySurface: "monitor",
-        },
+        video: true,
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-        },
-        // Force the browser to display the permission dialog
-        selfBrowserSurface: "exclude",
+        }
       });
       
       console.log("Display media acquired:", stream);
